@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import Icon from '@/components/ui/icon';
+import ComparisonCard from '@/components/ComparisonCard';
 
 interface Product {
   id: number;
@@ -91,6 +92,63 @@ const mockProducts: Product[] = [
 const categories = ['Все', 'Для посуды', 'Для стирки', 'Для уборки', 'Гигиена'];
 const brands = ['Все', 'EcoClean', 'GreenWash', 'PureHome', 'ClearView', 'SoftNature', 'BioCare'];
 
+const comparisons = [
+  {
+    category: 'Для посуды',
+    before: {
+      name: 'Fairy Ultra',
+      brand: 'P&G',
+      price: 350,
+      image: '🧴',
+      tested: true
+    },
+    after: {
+      name: 'Экологичное средство для мытья посуды',
+      brand: 'EcoClean',
+      price: 450,
+      image: '🧼',
+      crueltyFree: true,
+      vegan: true
+    }
+  },
+  {
+    category: 'Для стирки',
+    before: {
+      name: 'Tide Alpine Fresh',
+      brand: 'P&G',
+      price: 750,
+      image: '📦',
+      tested: true
+    },
+    after: {
+      name: 'Органический порошок для стирки',
+      brand: 'GreenWash',
+      price: 890,
+      image: '🧴',
+      crueltyFree: true,
+      vegan: true
+    }
+  },
+  {
+    category: 'Для уборки',
+    before: {
+      name: 'Mr. Proper',
+      brand: 'P&G',
+      price: 480,
+      image: '🧹',
+      tested: true
+    },
+    after: {
+      name: 'Универсальный очиститель',
+      brand: 'PureHome',
+      price: 550,
+      image: '🧽',
+      crueltyFree: true,
+      vegan: true
+    }
+  }
+];
+
 export default function Index() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Все');
@@ -172,6 +230,28 @@ export default function Index() {
               className="pl-12 h-14 text-lg"
             />
           </div>
+        </div>
+      </section>
+
+      <section className="container mx-auto px-4 py-12">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl font-bold mb-2">Популярные замены</h2>
+          <p className="text-muted-foreground">Узнай, чем заменить известные бренды</p>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          {comparisons.map((comparison, index) => (
+            <div 
+              key={index}
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <ComparisonCard
+                before={comparison.before}
+                after={comparison.after}
+                category={comparison.category}
+              />
+            </div>
+          ))}
         </div>
       </section>
 
