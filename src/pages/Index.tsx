@@ -150,11 +150,17 @@ const comparisons = [
 ];
 
 export default function Index() {
+  const [currentView, setCurrentView] = useState<'home' | 'search' | 'catalog' | 'favorites'>('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Все');
   const [selectedBrand, setSelectedBrand] = useState('Все');
   const [priceRange, setPriceRange] = useState('Все');
   const [favorites, setFavorites] = useState<number[]>([]);
+  
+  const [userProduct, setUserProduct] = useState('');
+  const [userBrand, setUserBrand] = useState('');
+  const [userCategory, setUserCategory] = useState('');
+  const [matchResult, setMatchResult] = useState<Product | null>(null);
 
   const filteredProducts = mockProducts.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -188,19 +194,35 @@ export default function Index() {
               <h1 className="text-2xl font-bold">EcoChoice</h1>
             </div>
             <nav className="flex gap-6 items-center">
-              <Button variant="ghost" className="gap-2">
+              <Button 
+                variant={currentView === 'home' ? 'default' : 'ghost'} 
+                className="gap-2"
+                onClick={() => setCurrentView('home')}
+              >
                 <Icon name="Home" size={18} />
                 Главная
               </Button>
-              <Button variant="ghost" className="gap-2">
+              <Button 
+                variant={currentView === 'search' ? 'default' : 'ghost'} 
+                className="gap-2"
+                onClick={() => setCurrentView('search')}
+              >
                 <Icon name="Search" size={18} />
-                Поиск
+                Подбор аналога
               </Button>
-              <Button variant="ghost" className="gap-2">
+              <Button 
+                variant={currentView === 'catalog' ? 'default' : 'ghost'} 
+                className="gap-2"
+                onClick={() => setCurrentView('catalog')}
+              >
                 <Icon name="ShoppingBag" size={18} />
                 Каталог
               </Button>
-              <Button variant="ghost" className="gap-2 relative">
+              <Button 
+                variant={currentView === 'favorites' ? 'default' : 'ghost'} 
+                className="gap-2 relative"
+                onClick={() => setCurrentView('favorites')}
+              >
                 <Icon name="Heart" size={18} />
                 Избранное
                 {favorites.length > 0 && (
@@ -214,6 +236,8 @@ export default function Index() {
         </div>
       </header>
 
+      {currentView === 'home' && (
+      <>
       <section className="bg-secondary py-16 animate-fade-in">
         <div className="container mx-auto px-4 text-center">
           <h2 className="text-5xl font-bold mb-4">Найди свой выбор без жестокости</h2>
@@ -416,6 +440,276 @@ export default function Index() {
           </main>
         </div>
       </section>
+      </>
+      )}
+
+      {currentView === 'search' && (
+        <section className="container mx-auto px-4 py-12 animate-fade-in">
+          <div className="max-w-3xl mx-auto">
+            <div className="text-center mb-8">
+              <h2 className="text-4xl font-bold mb-3">Подбор cruelty-free аналога</h2>
+              <p className="text-lg text-muted-foreground">
+                Укажи свое средство — найдем точную замену без жестокости
+              </p>
+            </div>
+
+            <Card className="p-8">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const match = mockProducts.find(p => 
+                  p.category === userCategory || userCategory === ''
+                );
+                setMatchResult(match || mockProducts[0]);
+              }}>
+                <div className="space-y-6">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Название твоего средства
+                    </label>
+                    <Input
+                      placeholder="Например: Fairy Ultra, Tide, Domestos..."
+                      value={userProduct}
+                      onChange={(e) => setUserProduct(e.target.value)}
+                      className="h-12 text-base"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Производитель
+                    </label>
+                    <Input
+                      placeholder="Например: P&G, Henkel, Unilever..."
+                      value={userBrand}
+                      onChange={(e) => setUserBrand(e.target.value)}
+                      className="h-12 text-base"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">
+                      Категория
+                    </label>
+                    <Select value={userCategory} onValueChange={setUserCategory}>
+                      <SelectTrigger className="h-12">
+                        <SelectValue placeholder="Выбери категорию" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Для посуды">Для посуды</SelectItem>
+                        <SelectItem value="Для стирки">Для стирки</SelectItem>
+                        <SelectItem value="Для уборки">Для уборки</SelectItem>
+                        <SelectItem value="Гигиена">Гигиена</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button type="submit" size="lg" className="w-full gap-2 h-14 text-lg">
+                    <Icon name="Sparkles" size={20} />
+                    Найти cruelty-free аналог
+                  </Button>
+                </div>
+              </form>
+
+              {matchResult && (
+                <div className="mt-8 pt-8 border-t animate-fade-in">
+                  <h3 className="text-xl font-bold mb-4 text-center">Твоя замена найдена! 🎉</h3>
+                  <Card className="border-2 border-primary/20 bg-accent/20">
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <div className="text-6xl">{matchResult.image}</div>
+                        <Badge variant="secondary" className="gap-1 bg-primary/10 text-primary border-primary/20">
+                          <Icon name="Check" size={14} />
+                          Точное совпадение
+                        </Badge>
+                      </div>
+                      <CardTitle className="text-2xl mt-4">{matchResult.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-muted-foreground mb-4">{matchResult.description}</p>
+                      <div className="flex gap-2 flex-wrap mb-4">
+                        {matchResult.crueltyFree && (
+                          <Badge variant="secondary" className="gap-1">
+                            <Icon name="Check" size={14} />
+                            Cruelty-Free
+                          </Badge>
+                        )}
+                        {matchResult.vegan && (
+                          <Badge variant="secondary" className="gap-1">
+                            🌱 Vegan
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="flex items-center justify-between pt-4 border-t">
+                        <span className="text-muted-foreground">{matchResult.brand}</span>
+                        <span className="text-2xl font-bold text-primary">{matchResult.price} ₽</span>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <div className="mt-6 p-4 bg-secondary rounded-lg">
+                    <div className="flex gap-3">
+                      <Icon name="Info" className="text-primary mt-1" size={20} />
+                      <div>
+                        <p className="font-medium mb-1">Почему этот аналог?</p>
+                        <p className="text-sm text-muted-foreground">
+                          Средство из категории "{matchResult.category}" с максимально похожими свойствами. 
+                          Сертифицировано без тестов на животных, экологично и эффективно.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </Card>
+          </div>
+        </section>
+      )}
+
+      {currentView === 'catalog' && (
+        <section className="container mx-auto px-4 py-12 animate-fade-in">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold mb-3">Каталог cruelty-free средств</h2>
+            <p className="text-lg text-muted-foreground">Все товары без жестокости к животным</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {mockProducts.map((product, index) => (
+              <Card 
+                key={product.id} 
+                className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="text-6xl mb-4">{product.image}</div>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => toggleFavorite(product.id)}
+                      className="transition-transform hover:scale-110"
+                    >
+                      <Icon 
+                        name="Heart" 
+                        size={20} 
+                        className={favorites.includes(product.id) ? 'fill-red-500 text-red-500' : ''} 
+                      />
+                    </Button>
+                  </div>
+                  <CardTitle className="text-lg">{product.name}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">{product.description}</p>
+                  <div className="flex gap-2 flex-wrap mb-4">
+                    {product.crueltyFree && (
+                      <Badge variant="secondary" className="gap-1">
+                        <Icon name="Check" size={14} />
+                        Cruelty-Free
+                      </Badge>
+                    )}
+                    {product.vegan && (
+                      <Badge variant="secondary" className="gap-1">
+                        🌱 Vegan
+                      </Badge>
+                    )}
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-muted-foreground">{product.brand}</span>
+                    <span className="text-xl font-bold text-primary">{product.price} ₽</span>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button className="w-full gap-2 group-hover:bg-primary/90">
+                    <Icon name="ShoppingCart" size={18} />
+                    Подробнее
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {currentView === 'favorites' && (
+        <section className="container mx-auto px-4 py-12 animate-fade-in">
+          <div className="text-center mb-8">
+            <h2 className="text-4xl font-bold mb-3">Твое избранное</h2>
+            <p className="text-lg text-muted-foreground">
+              {favorites.length > 0 
+                ? `Сохранено ${favorites.length} товаров` 
+                : 'Пока пусто — добавь товары из каталога'}
+            </p>
+          </div>
+
+          {favorites.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {mockProducts.filter(p => favorites.includes(p.id)).map((product, index) => (
+                <Card 
+                  key={product.id} 
+                  className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-fade-in"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="text-6xl mb-4">{product.image}</div>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => toggleFavorite(product.id)}
+                        className="transition-transform hover:scale-110"
+                      >
+                        <Icon 
+                          name="Heart" 
+                          size={20} 
+                          className="fill-red-500 text-red-500"
+                        />
+                      </Button>
+                    </div>
+                    <CardTitle className="text-lg">{product.name}</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">{product.description}</p>
+                    <div className="flex gap-2 flex-wrap mb-4">
+                      {product.crueltyFree && (
+                        <Badge variant="secondary" className="gap-1">
+                          <Icon name="Check" size={14} />
+                          Cruelty-Free
+                        </Badge>
+                      )}
+                      {product.vegan && (
+                        <Badge variant="secondary" className="gap-1">
+                          🌱 Vegan
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">{product.brand}</span>
+                      <span className="text-xl font-bold text-primary">{product.price} ₽</span>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button className="w-full gap-2 group-hover:bg-primary/90">
+                      <Icon name="ShoppingCart" size={18} />
+                      Подробнее
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-16">
+              <Icon name="Heart" size={64} className="mx-auto text-muted-foreground/50 mb-4" />
+              <h3 className="text-xl font-semibold mb-2">Здесь пока пусто</h3>
+              <p className="text-muted-foreground mb-6">Добавь товары в избранное, чтобы быстро находить их</p>
+              <Button onClick={() => setCurrentView('catalog')} className="gap-2">
+                <Icon name="ShoppingBag" size={18} />
+                Перейти в каталог
+              </Button>
+            </div>
+          )}
+        </section>
+      )}
+
     </div>
   );
 }
